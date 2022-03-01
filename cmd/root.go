@@ -34,14 +34,14 @@ func init() {
 }
 
 var gen = &cobra.Command{
-	Use:   "gen generateFileName solutionFileName num",
+	Use:   "gen generateFileName [solutionFileName] num",
 	Short: "gen is a simple tests generator",
 	Long:  "A simple tests generator build with love by jaxleof in go and Cobra",
 	Run: func(cmd *cobra.Command, args []string) {
 		// fmt.Println(generateFileName, solutionFileName, num) test the input is valid
 		// fmt.Println(prefix,inputSuffix, outputSuffix) test the prefix, suffix
 
-		//generate the binary file of generatorFile and solution File
+		//generate the binary file of generatorFile
 		var genFileExtension = path.Ext(generateFileName)
 		if genFileExtension == ".cpp" {
 			cmd := exec.Command("g++", generateFileName, "-o", "generator")
@@ -53,18 +53,6 @@ var gen = &cobra.Command{
 			}
 		} else {
 			log.Fatalln("this version doesn't support this file type: " + genFileExtension)
-		}
-		var solFileExtension = path.Ext(solutionFileName)
-		if solFileExtension == ".cpp" {
-			cmd := exec.Command("g++", solutionFileName, "-o", "solution")
-			cmd.Stdin = os.Stdin
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			if err := cmd.Run(); err != nil {
-				log.Fatal(err)
-			}
-		} else {
-			log.Fatalln("this version doesn't support this file type: " + solFileExtension)
 		}
 
 		// mkdir for storing tests
@@ -80,7 +68,8 @@ var gen = &cobra.Command{
 			if err := cmd.Run(); err != nil {
 				log.Fatal(err)
 			}
-			inputData, err := ioutil.ReadAll(&input)
+			var err error
+			inputData, err = ioutil.ReadAll(&input)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -90,6 +79,23 @@ var gen = &cobra.Command{
 		}
 
 		// generate the outPut File
+		// if there is no output File
+		if len(args) == 2 {
+			return
+		}
+		// generate the solution binary program
+		var solFileExtension = path.Ext(solutionFileName)
+		if solFileExtension == ".cpp" {
+			cmd := exec.Command("g++", solutionFileName, "-o", "solution")
+			cmd.Stdin = os.Stdin
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			if err := cmd.Run(); err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			log.Fatalln("this version doesn't support this file type: " + solFileExtension)
+		}
 		for i := start; i < start+num; i++ {
 			var input = bytes.NewBuffer(inputData)
 			var output bytes.Buffer
@@ -109,9 +115,11 @@ var gen = &cobra.Command{
 		}
 	},
 	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 3 {
-			return errors.New("accepts 3 args, receive " + strconv.Itoa(len(args)))
-		} else {
+		if len(args) < 2 {
+			return errors.New("accepts least 2 args, receive " + strconv.Itoa(len(args)))
+		} else if len(args) > 3 {
+			return errors.New("accept most 3 args, receive " + strconv.Itoa(len(args)))
+		} else if len(args) == 3 {
 			if _, err := os.Stat(args[0]); err != nil {
 				return err
 			} else {
@@ -127,8 +135,20 @@ var gen = &cobra.Command{
 			} else {
 				num = tmpNum
 			}
-			return nil
+		} else {
+			// only two args [generator file, num]
+			if _, err := os.Stat(args[0]); err != nil {
+				return err
+			} else {
+				generateFileName = args[0]
+			}
+			if tmpNum, err := strconv.Atoi(args[1]); err != nil {
+				return err
+			} else {
+				num = tmpNum
+			}
 		}
+		return nil
 	},
 }
 
