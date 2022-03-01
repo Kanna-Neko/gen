@@ -1,6 +1,6 @@
 ## gen
 
-A simple and subsidiary Command Line interface program that can generate tests through generator file and solution file.
+A simple and subsidiary Command Line interface tool that can generate tests through generator file and solution file.
 
 gen can help you ignore io problem in the generator file and solution file, you just need to output data to stdout in the generator file and output solution data like solve the problem.
 
@@ -15,7 +15,7 @@ tree
 #├── gen
 #├── sampleGenerator.cpp
 #└── sampleSolution.cpp
-./gen data/sampleGenerator.cpp data/sampleSolution.cpp 3
+./gen sampleGenerator.cpp sampleSolution.cpp 3
 
 #.
 #├── gen
