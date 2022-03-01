@@ -6,6 +6,10 @@ gen can help you ignore io problem in the generator file and solution file, you 
 
 if you don't need ans file, the solution file is unnecessary.
 
+## Usage
+
+gen generateFileName [solutionFileName] num [flags]
+
 ## example
 
 ### a typical sample to introduce basic funcion
