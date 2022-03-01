@@ -25,11 +25,12 @@ var (
 )
 
 func init() {
-	gen.PersistentFlags().StringVarP(&prefix, "prefix", "p", "", "add a prefix to all fileName")
+	gen.PersistentFlags().StringVarP(&prefix, "prefix", "p", "test", "add a prefix to all fileName")
 	gen.PersistentFlags().StringVarP(&inputSuffix, "inputSuffix", "i", "in", "add a suffix to all inputFile")
 	gen.PersistentFlags().StringVarP(&outputSuffix, "outputSuffix", "o", "out", "add a suffix to all outputFile")
 	gen.PersistentFlags().IntVarP(&start, "start", "s", 1, "set a starting sequence number before all files")
 	wd, _ = os.Getwd()
+	log.SetFlags(log.Ldate | log.LstdFlags | log.Lshortfile)
 }
 
 var gen = &cobra.Command{
@@ -66,7 +67,12 @@ var gen = &cobra.Command{
 			log.Fatalln("this version doesn't support this file type: " + solFileExtension)
 		}
 
+		// mkdir for storing tests
+		// if err := os.Mkdir(prefix+"s", 0666); err != nil {
+		// 	log.Fatal(err)
+		// }
 		// generate the inputFile
+		var inputData []byte
 		for i := start; i < start+num; i++ {
 			var input bytes.Buffer
 			cmd := exec.Command(wd + "/generator")
@@ -74,11 +80,32 @@ var gen = &cobra.Command{
 			if err := cmd.Run(); err != nil {
 				log.Fatal(err)
 			}
-			var inputData, err = ioutil.ReadAll(&input)
+			inputData, err := ioutil.ReadAll(&input)
 			if err != nil {
 				log.Fatal(err)
 			}
-			ioutil.WriteFile(prefix+strconv.Itoa(i)+"."+inputSuffix, inputData, 0666)
+			if err := ioutil.WriteFile(prefix+strconv.Itoa(i)+"."+inputSuffix, inputData, 0666); err != nil {
+				log.Fatal(err)
+			}
+		}
+
+		// generate the outPut File
+		for i := start; i < start+num; i++ {
+			var input = bytes.NewBuffer(inputData)
+			var output bytes.Buffer
+			cmd := exec.Command(wd + "/solution")
+			cmd.Stdin = input
+			cmd.Stdout = &output
+			if err := cmd.Run(); err != nil {
+				log.Fatal(err)
+			}
+			var outputData, err = ioutil.ReadAll(&output)
+			if err != nil {
+				log.Fatal(err)
+			}
+			if err := ioutil.WriteFile(prefix+strconv.Itoa(i)+"."+outputSuffix, outputData, 0666); err != nil {
+				log.Fatal(err)
+			}
 		}
 	},
 	Args: func(cmd *cobra.Command, args []string) error {
