@@ -44,3 +44,11 @@ tree
 4. -p, --prefix string         add a prefix to all fileName (default "test")
 5. -s, --start int             set a starting sequence number before all files (default 1)
 ```
+
+## develop todo List
+- [x] Support cpp file
+- [ ] Functionalize the code
+- [ ] Support python file (python3)
+- [ ] Support c file
+- [ ] Support golang file
+- [ ] Support for generating compressed packages
