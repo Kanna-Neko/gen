@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -22,6 +23,7 @@ var (
 	inputSuffix      string
 	outputSuffix     string
 	wd               string
+	inputData        [][]byte
 )
 
 func init() {
@@ -41,44 +43,14 @@ var gen = &cobra.Command{
 		// fmt.Println(generateFileName, solutionFileName, num) test the input is valid
 		// fmt.Println(prefix,inputSuffix, outputSuffix) test the prefix, suffix
 
-		//generate the binary file of generatorFile
+		//generate the binary file of generatorFile and generate the inputFile
 		var genFileExtension = path.Ext(generateFileName)
 		if genFileExtension == ".cpp" {
-			cmd := exec.Command("g++", generateFileName, "-o", "generator")
-			cmd.Stdin = os.Stdin
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			if err := cmd.Run(); err != nil {
-				log.Fatal(err)
-			}
+			cppGen()
 		} else {
 			log.Fatalln("this version doesn't support this file type: " + genFileExtension)
 		}
 
-		// mkdir for storing tests
-		// if err := os.Mkdir(prefix+"s", 0666); err != nil {
-		// 	log.Fatal(err)
-		// }
-		// generate the inputFile
-		var inputData []byte
-		for i := start; i < start+num; i++ {
-			var input bytes.Buffer
-			cmd := exec.Command(wd + "/generator")
-			cmd.Stdout = &input
-			if err := cmd.Run(); err != nil {
-				log.Fatal(err)
-			}
-			var err error
-			inputData, err = ioutil.ReadAll(&input)
-			if err != nil {
-				log.Fatal(err)
-			}
-			if err := ioutil.WriteFile(prefix+strconv.Itoa(i)+"."+inputSuffix, inputData, 0666); err != nil {
-				log.Fatal(err)
-			}
-		}
-
-		// generate the outPut File
 		// if there is no output File
 		if len(args) == 2 {
 			return
@@ -86,32 +58,9 @@ var gen = &cobra.Command{
 		// generate the solution binary program
 		var solFileExtension = path.Ext(solutionFileName)
 		if solFileExtension == ".cpp" {
-			cmd := exec.Command("g++", solutionFileName, "-o", "solution")
-			cmd.Stdin = os.Stdin
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			if err := cmd.Run(); err != nil {
-				log.Fatal(err)
-			}
+			cppSol()
 		} else {
 			log.Fatalln("this version doesn't support this file type: " + solFileExtension)
-		}
-		for i := start; i < start+num; i++ {
-			var input = bytes.NewBuffer(inputData)
-			var output bytes.Buffer
-			cmd := exec.Command(wd + "/solution")
-			cmd.Stdin = input
-			cmd.Stdout = &output
-			if err := cmd.Run(); err != nil {
-				log.Fatal(err)
-			}
-			var outputData, err = ioutil.ReadAll(&output)
-			if err != nil {
-				log.Fatal(err)
-			}
-			if err := ioutil.WriteFile(prefix+strconv.Itoa(i)+"."+outputSuffix, outputData, 0666); err != nil {
-				log.Fatal(err)
-			}
 		}
 	},
 	Args: func(cmd *cobra.Command, args []string) error {
@@ -154,4 +103,65 @@ var gen = &cobra.Command{
 
 func Execute() {
 	gen.Execute()
+}
+
+func cppGen() {
+	cmd := exec.Command("g++", generateFileName, "-o", "generator")
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		log.Fatal(err)
+	}
+	for i := start; i < start+num; i++ {
+		var input bytes.Buffer
+		generator := exec.Command(wd + "/generator")
+		generator.Stdin = os.Stdin
+		generator.Stdout = &input
+		if err := generator.Run(); err != nil {
+			log.Fatal(err)
+		}
+		var err error
+		var tmpData []byte
+		tmpData, err = ioutil.ReadAll(&input)
+		fmt.Println(tmpData)
+		if err != nil {
+			log.Fatal(err)
+		}
+		inputData = append(inputData, tmpData)
+		if err := ioutil.WriteFile(prefix+strconv.Itoa(i)+"."+inputSuffix, inputData[i-start], 0666); err != nil {
+			log.Fatal(err)
+		}
+	}
+	defer os.Remove("generator")
+}
+
+func cppSol() {
+	cmd := exec.Command("g++", solutionFileName, "-o", "solution")
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		log.Fatal(err)
+	}
+	// generate the outPut File
+	for i := start; i < start+num; i++ {
+		var input = bytes.NewBuffer(inputData[i-start])
+		var output bytes.Buffer
+		cmd := exec.Command(wd + "/solution")
+		cmd.Stdin = input
+		cmd.Stdout = &output
+		if err := cmd.Run(); err != nil {
+			log.Fatal(err)
+		}
+		var outputData, err = ioutil.ReadAll(&output)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err := ioutil.WriteFile(prefix+strconv.Itoa(i)+"."+outputSuffix, outputData, 0666); err != nil {
+			log.Fatal(err)
+		}
+	}
+	defer os.Remove("solution")
+
 }

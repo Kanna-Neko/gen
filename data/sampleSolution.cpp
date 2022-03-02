@@ -12,8 +12,7 @@ int T;
 char cj[3] = {'R','G','B'};
 char in[maxn];
 int main() {
-	cin >> n;
-	for(int i = 1; i <= n; i++) cin >> in[i];
-	for(int i = 1; i <= n; i++) cout << in[i];
+	cin >> n >> m;
+	cout << n + m;
 	return 0;
 }
