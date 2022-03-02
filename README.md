@@ -52,3 +52,4 @@ tree
 - [ ] Support c file
 - [ ] Support golang file
 - [ ] Support for generating compressed packages
+- [ ] generate outFiles through solution files and inputFiles, this function accomplish by command named gen solution
