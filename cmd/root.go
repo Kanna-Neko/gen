@@ -3,7 +3,6 @@ package cmd
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -124,7 +123,6 @@ func cppGen() {
 		var err error
 		var tmpData []byte
 		tmpData, err = ioutil.ReadAll(&input)
-		fmt.Println(tmpData)
 		if err != nil {
 			log.Fatal(err)
 		}
