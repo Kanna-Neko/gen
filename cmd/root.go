@@ -1,12 +1,10 @@
 package cmd
 
 import (
-	"bytes"
 	"fmt"
+	"gen/tool"
 	"io/ioutil"
 	"log"
-	"os"
-	"os/exec"
 	"path"
 	"strconv"
 
@@ -21,7 +19,6 @@ var (
 	prefix           string
 	inputSuffix      string
 	outputSuffix     string
-	wd               string
 )
 
 func init() {
@@ -30,12 +27,11 @@ func init() {
 	gen.PersistentFlags().StringVarP(&outputSuffix, "outputSuffix", "o", "out", "add a suffix to all outputFile")
 	gen.PersistentFlags().IntVarP(&start, "start", "s", 1, "set a starting sequence number before all files")
 	gen.PersistentFlags().IntVarP(&num, "num", "n", 10, "The number of input file and output file")
-	wd, _ = os.Getwd()
 	log.SetFlags(log.Ldate | log.LstdFlags | log.Lshortfile)
 }
 
 var gen = &cobra.Command{
-	Use:   "gen generateFileName [solutionFileName] num",
+	Use:   "gen generateFileName solutionFileName",
 	Short: "gen is a simple tests generator",
 	Long:  "A simple tests generator build with love by jaxleof in go and Cobra",
 	Args:  cobra.ExactArgs(2),
@@ -53,7 +49,7 @@ var gen = &cobra.Command{
 			switch generateExt {
 			case ".cpp":
 				var err error
-				if inputData, err = runCpp(generateFileName, nil); err != nil {
+				if inputData, err = tool.RunCpp(generateFileName, nil); err != nil {
 					log.Fatal(err)
 				}
 			default:
@@ -63,7 +59,7 @@ var gen = &cobra.Command{
 			switch solutionExt {
 			case ".cpp":
 				var err error
-				if outputData, err = runCpp(solutionFileName, inputData); err != nil {
+				if outputData, err = tool.RunCpp(solutionFileName, inputData); err != nil {
 					log.Fatal(err)
 				}
 			default:
@@ -77,20 +73,4 @@ var gen = &cobra.Command{
 
 func Execute() {
 	gen.Execute()
-}
-
-func runCpp(fileName string, input []byte) ([]byte, error) {
-	cmd := exec.Command("g++", fileName, "-o", "catt")
-	defer os.Remove("catt")
-	cmd.Run()
-	cmd = exec.Command(wd + "/catt")
-	if input != nil {
-		cmd.Stdin = bytes.NewBuffer(input)
-	}
-	var output = new(bytes.Buffer)
-	cmd.Stdout = output
-	if err := cmd.Run(); err != nil {
-		return nil, err
-	}
-	return ioutil.ReadAll(output)
 }
