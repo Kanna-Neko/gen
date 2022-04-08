@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"gen/tool"
 	"io/ioutil"
 	"log"
@@ -45,6 +46,8 @@ var vs = &cobra.Command{
 				}
 				ioutil.WriteFile(outputFileName, output, 0666)
 			}
+		default:
+			fmt.Println("The format of file is not supported")
 		}
 	},
 }
