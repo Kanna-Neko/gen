@@ -10,16 +10,18 @@ if you don't need ans file, the solution file is unnecessary.
 
 gen generateFileName solutionFileName [flags]
 
+gen vs solutionFileName [inputFile...]
+
 ## example
 
 ### a typical sample to introduce basic funcion
 ```shell
-tree
+~/code/gen/data tree
 #.
 #├── gen
 #├── sampleGenerator.cpp
 #└── sampleSolution.cpp
-./gen sampleGenerator.cpp sampleSolution.cpp
+~/code/gen/data /gen sampleGenerator.cpp sampleSolution.cpp
 
 #.
 #├── gen
@@ -33,8 +35,33 @@ tree
 #├── test2.out
 #├── test3.in
 #└── test3.out
+#...
 ```
+``` shell
+~/code/gen/data tree
+.
+├── gen
+├── gen.exe
+├── sampleGenerator.cpp
+├── sampleSolution.cpp
+├── test1.in
+├── test2.in
+└── test3.in
 
+ ~/code/gen/data ./gen vs sampleSolution.cpp test*
+ ~/code/gen/data tree
+.
+├── gen
+├── gen.exe
+├── sampleGenerator.cpp
+├── sampleSolution.cpp
+├── test1.in
+├── test1.out
+├── test2.in
+├── test2.out
+├── test3.in
+└── test3.out
+```
 ### Flags
 
 ```code
@@ -53,4 +80,4 @@ tree
 - [ ] Support c file
 - [ ] Support golang file
 - [ ] Support for generating compressed packages
-- [x] generate outFiles through solution files and inputFiles, this function accomplish by command named gen solution
+- [x] generate outFiles through solution files and inputFiles, this function accomplish by command named gen vs
